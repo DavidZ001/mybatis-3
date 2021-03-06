@@ -28,6 +28,7 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
  * @author Clinton Begin
+ *  类属性的描述信息的功能
  */
 public class MetaClass {
 
@@ -48,6 +49,11 @@ public class MetaClass {
     return MetaClass.forClass(propType, reflectorFactory);
   }
 
+  /**
+   * 查询属性名 当对象包装对象时， order.deliveryAddress.customer.name
+   * @param name 属性名称
+   * @return
+   */
   public String findProperty(String name) {
     StringBuilder prop = buildProperty(name, new StringBuilder());
     return prop.length() > 0 ? prop.toString() : null;

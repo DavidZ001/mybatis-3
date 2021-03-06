@@ -15,6 +15,7 @@
  */
 package org.apache.ibatis.reflection;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -44,24 +45,32 @@ import org.apache.ibatis.reflection.property.PropertyNamer;
 /**
  * This class represents a cached set of class definition information that
  * allows for easy mapping between property names and getter/setter methods.
- *
+ *  主要是缓存 对象的定义信息
  * @author Clinton Begin
  */
 public class Reflector {
-
+  // class
   private final Class<?> type;
+  // 读属性
   private final String[] readablePropertyNames;
+  // 写属性
   private final String[] writablePropertyNames;
+  // set 方法
   private final Map<String, Invoker> setMethods = new HashMap<>();
+  // get 方法
   private final Map<String, Invoker> getMethods = new HashMap<>();
+  // set方法属性  key 为属性名称， v 为属性的类型
   private final Map<String, Class<?>> setTypes = new HashMap<>();
+  // get方法属性  key 为属性名称， v 为属性的类型
   private final Map<String, Class<?>> getTypes = new HashMap<>();
+  // 默认构造器
   private Constructor<?> defaultConstructor;
-
+  // 所有属性的集合，这个集合的属性都是大写的
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
 
   public Reflector(Class<?> clazz) {
     type = clazz;
+    // 得到默认的无参构造器（无果不存在则为空）
     addDefaultConstructor(clazz);
     addGetMethods(clazz);
     addSetMethods(clazz);
@@ -84,7 +93,9 @@ public class Reflector {
 
   private void addGetMethods(Class<?> clazz) {
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
+    // 获取 clazz 下所有的方法
     Method[] methods = getClassMethods(clazz);
+    // 筛选出 get 方法添加到集合当中
     Arrays.stream(methods).filter(m -> m.getParameterTypes().length == 0 && PropertyNamer.isGetter(m.getName()))
       .forEach(m -> addMethodConflict(conflictingGetters, PropertyNamer.methodToProperty(m.getName()), m));
     resolveGetterConflicts(conflictingGetters);
@@ -121,6 +132,9 @@ public class Reflector {
       addGetMethod(propName, winner, isAmbiguous);
     }
   }
+
+
+
 
   private void addGetMethod(String name, Method method, boolean isAmbiguous) {
     MethodInvoker invoker = isAmbiguous
@@ -276,6 +290,7 @@ public class Reflector {
     Map<String, Method> uniqueMethods = new HashMap<>();
     Class<?> currentClass = clazz;
     while (currentClass != null && currentClass != Object.class) {
+      // 将类中获取到的所有方法都添加到集合当中
       addUniqueMethods(uniqueMethods, currentClass.getDeclaredMethods());
 
       // we also need to look for interface methods -
@@ -284,7 +299,7 @@ public class Reflector {
       for (Class<?> anInterface : interfaces) {
         addUniqueMethods(uniqueMethods, anInterface.getMethods());
       }
-
+      // 如果是子类，继续扫描父类中的方法
       currentClass = currentClass.getSuperclass();
     }
 
@@ -295,11 +310,14 @@ public class Reflector {
 
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
+      // 判断是否为桥接方法
       if (!currentMethod.isBridge()) {
+        // 生成方法签名
         String signature = getSignature(currentMethod);
         // check to see if the method is already known
         // if it is known, then an extended class must have
         // overridden a method
+        // 如果方法已经在集合中，则忽略（子类重写父类方法的情况下）
         if (!uniqueMethods.containsKey(signature)) {
           uniqueMethods.put(signature, currentMethod);
         }

@@ -48,6 +48,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   @SuppressWarnings("unchecked")
   @Override
   public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
+    // 判定创建的类型
     Class<?> classToCreate = resolveInterface(type);
     // we know types are assignable
     return (T) instantiateClass(classToCreate, constructorArgTypes, constructorArgs);
@@ -56,6 +57,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   private  <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
+      // 无参构造创建
       if (constructorArgTypes == null || constructorArgs == null) {
         constructor = type.getDeclaredConstructor();
         try {
@@ -69,8 +71,10 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
           }
         }
       }
+      // 有参构造
       constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[0]));
       try {
+        // 创建有参构造对象
         return constructor.newInstance(constructorArgs.toArray(new Object[0]));
       } catch (IllegalAccessException e) {
         if (Reflector.canControlMemberAccessible()) {

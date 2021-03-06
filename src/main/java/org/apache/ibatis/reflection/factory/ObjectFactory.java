@@ -20,6 +20,7 @@ import java.util.Properties;
 
 /**
  * MyBatis uses an ObjectFactory to create all needed new Objects.
+ *  反射工厂
  *
  * @author Clinton Begin
  */
@@ -35,7 +36,7 @@ public interface ObjectFactory {
 
   /**
    * Creates a new object with default constructor.
-   *
+   * 默认构造器创建对象
    * @param <T>
    *          the generic type
    * @param type
