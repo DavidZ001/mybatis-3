@@ -54,7 +54,15 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class TypeHandlerRegistry {
 
+  /**
+   *  记录了jdbcType与TypeHandler之间的关联关系
+   */
   private final Map<JdbcType, TypeHandler<?>>  jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
+  /**
+   *  集合的第一层key 是需要转换的java类型
+   *  第二层key是转换的目标jdbcType
+   *  为什么两层设计？ String 转换成jdbc 可能是 char varchar text等
+   */
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
   private final TypeHandler<Object> unknownTypeHandler;
   private final Map<Class<?>, TypeHandler<?>> allTypeHandlersMap = new HashMap<>();
